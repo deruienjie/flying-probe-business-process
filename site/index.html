@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>飞针设备制造 · 业务流程分析</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="top">
+  <div class="logo">FP</div>
+  <div>
+    <h1>飞针设备制造 · 业务流程分析</h1>
+    <div class="cnt" id="countLine"></div>
+  </div>
+  <div class="density" id="density">
+    <button data-mode="std" class="on">标准</button>
+    <button data-mode="main">只看主线</button>
+  </div>
+</div>
+
+<div class="ribbon" id="ribbon"></div>
+
+<div class="body">
+  <aside class="side">
+    <h2>业务主线</h2>
+    <div id="tree"></div>
+  </aside>
+  <div class="splitter" data-split="side" title="拖动调整左栏宽度（双击复位）"></div>
+  <main class="main" id="main"></main>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
