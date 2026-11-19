@@ -236,3 +236,60 @@ MODEL.push({
       ]}
   ]
 });
+
+/* ============ V3 业务全景：由现有数据派生 + 少量编辑性摘要 ============ */
+/* 阶段的一句话摘要与关键输入输出（编辑内容，不改阶段本身） */
+const PHASE_IO = {
+  P1: { core: "找线索 → 报价 → 签约", in: "客户线索 / 板卡需求", out: "销售订单 / 合同" },
+  P2: { core: "能不能做、赚不赚钱、来不来得及", in: "销售订单 / 技术协议", out: "评审记录 / 项目主计划" },
+  P3: { core: "图纸、BOM、软件与探针配置", in: "技术协议 / 客户样品", out: "图纸 / BOM / 软件版本" },
+  P4: { core: "齐套：计划、采购、来料检验", in: "主计划 / BOM", out: "采购订单 / 入库与检验记录" },
+  P5: { core: "装出来，调到承诺的精度", in: "物料 / 图纸 / 探针", out: "标定记录 / 测试数据" },
+  P6: { core: "FAT 签字放行", in: "内部测试数据", out: "FAT 报告 / 发运放行单" },
+  P7: { core: "现场安装、SAT 验收、培训移交", in: "发货单", out: "SAT 验收单" },
+  P8: { core: "回款 + 长期服务", in: "验收单 / 客户请求", out: "应收 / 服务工单" },
+  P9: { core: "横贯：应收应付、存货成本、总账报表、税与资金", in: "各阶段产生的业务单据", out: "凭证 / 报表 / 成本" }
+};
+
+/* 关键单据流：只取有真实产出依据的节点，不硬串 */
+const BILL_FLOW = [
+  { label: "商机记录", step: "C1" },
+  { label: "需求确认单", step: "D1" },
+  { label: "报价单", step: "E4" },
+  { label: "合同", step: "F3" },
+  { label: "销售订单", step: "S04" },
+  { label: "BOM", step: "S06" },
+  { label: "采购申请 / PO", step: "S10" },
+  { label: "入库与检验", step: "S11" },
+  { label: "生产工单", step: "S12" },
+  { label: "测试数据", step: "S14" },
+  { label: "FAT 报告", step: "S15" },
+  { label: "发货单", step: "S16" },
+  { label: "SAT 验收单", step: "S17" },
+  { label: "应收单", step: "G4" },
+  { label: "成本计算单", step: "J6" }
+];
+
+/* 核心业务流程（商机 → 交付）：主线 + 条件分支 + 回退。
+   注意：这是【研究/示意】流程，不代表某家公司的实际审批路径。 */
+const CORE_FLOW = {
+  main: [
+    { id: "n1", label: "商机立项", sub: "C1", step: "C1" },
+    { id: "n2", label: "需求澄清", sub: "D1", step: "D1" },
+    { id: "n3", label: "打样测试", sub: "D2", step: "D2" },
+    { id: "n4", label: "方案与报价", sub: "E1–E3", step: "E3" },
+    { id: "n5", label: "合同评审", sub: "F2", step: "F2" },
+    { id: "n6", label: "订单评审", sub: "S04", step: "S04" },
+    { id: "n7", label: "装配与调试", sub: "S12–S13", step: "S12" },
+    { id: "n8", label: "FAT 验收", sub: "S15", step: "S15" },
+    { id: "n9", label: "SAT 与回款", sub: "S17 / G4", step: "S17" }
+  ],
+  branches: [
+    { from: "n3", label: "打样不通过", to: null, node: { id: "b1", label: "技术不可行", sub: "D3", step: "D3" } },
+    { from: "n5", label: "条款不通过", node: { id: "b2", label: "回谈判", sub: "F1", step: "F1" }, back: "n4" },
+    { from: "n6", label: "非标未识别", node: { id: "b3", label: "回技术评估", sub: "D3", step: "D3" }, back: "n4" },
+    { from: "n8", label: "FAT 不通过", node: { id: "b4", label: "返工复测", sub: "S14", step: "S14" }, back: "n7" }
+  ],
+  // 条件分支：报价被拒返回方案调整
+  returns: [{ from: "n4", label: "客户不接受报价 → 回方案调整", to: "n4" }]
+};
