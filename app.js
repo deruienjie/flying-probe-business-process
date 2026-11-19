@@ -24,7 +24,7 @@
 
   /* ---------- 顶部 ---------- */
   $("#ribbon").innerHTML = MODEL.map((p, i) =>
-    `${i ? '<span class="ra">→</span>' : ""}<button class="rp" data-phase="${p.id}">${esc(p.name)}</button>`).join("");
+    `${i ? '<span class="ra">→</span>' : ""}<button class="rp ${p.crossCutting ? "cross" : ""}" data-phase="${p.id}" title="${esc(p.goal)}">${esc(p.name)}</button>`).join("");
 
   /* ---------- 状态 ---------- */
   let state = { kind: "step", id: "C2" };   // kind: phase | segment | step
@@ -149,7 +149,28 @@
       <h2 class="title"><span class="ab" style="background:${ph.color}">${ph.id}</span>${esc(ph.name)}</h2>
       <div class="goal">${esc(ph.goal)}</div>
       ${strip(all, ph, ph.segments ? `${ph.segments.length} 个业务段` : `${ph.steps.length} 个环节`)}
+      ${ph.matrix ? matrix(ph) : ""}
       <div class="cards">${cards}</div>`;
+  }
+
+
+  function matrix(ph) {
+    const m = ph.matrix;
+    const mark = v => v === "full" ? `<span class="full">●</span>` : v === "part" ? `<span class="part">○</span>` : `<span class="none">–</span>`;
+    return `<div class="box" style="margin-bottom:14px">
+      <h4>金蝶云星空模块 × 环节矩阵</h4>
+      <table class="matrix">
+        <thead><tr><th>模块</th>${m.segs.map(id => `<th>${id} ${esc(findSeg(id)?.name || "")}</th>`).join("")}</tr></thead>
+        <tbody>
+          ${m.modules.map(mod => `<tr><td>${esc(mod)}</td>${(m.marks[mod] || []).map(v => `<td>${mark(v)}</td>`).join("")}</tr>`).join("")}
+        </tbody>
+      </table>
+      <div class="legend">
+        <span><b class="full">●</b> 该段主责产生单据</span>
+        <span><b class="part">○</b> 只读取 / 被引用</span>
+        <span><b class="none">–</b> 不涉及</span>
+      </div>
+    </div>`;
   }
 
   function strip(steps) {
@@ -161,6 +182,7 @@
       <span><b>${steps.length}</b> 个环节</span>
       <span><b>${roles.size}</b> 个角色</span>
       <span><b>${sys.size}</b> 个系统</span>
+      ${(() => { const mods = new Set(steps.map(x => x.module).filter(Boolean)); return mods.size ? `<span><b>${mods.size}</b> 个金蝶模块</span>` : ""; })()}
       ${ai.auto ? `<span>可自动 <b>${ai.auto}</b></span>` : ""}
       ${ai.help ? `<span>可辅助 <b>${ai.help}</b></span>` : ""}
       ${ai.human ? `<span>只能人做 <b>${ai.human}</b></span>` : ""}
@@ -211,6 +233,7 @@
   /* ---------- 段视图：表格 + 抽屉 ---------- */
   function viewSegment(ph, seg) {
     if (!drawerId || !seg.steps.some(s => s.id === drawerId)) drawerId = seg.steps[0].id;
+    const hasModule = seg.steps.some(s => s.module);
     const rows = seg.steps.map(s => `
       <tr class="${s.id === drawerId ? "on" : ""}" data-pick="${s.id}">
         <td class="id">${s.id}</td>
@@ -219,6 +242,7 @@
         <td class="trunc" title="${esc((s.inputs || []).join(" · "))}">${esc((s.inputs || []).join(" · "))}</td>
         <td class="trunc" title="${esc((s.outputs || []).join(" · "))}">${esc((s.outputs || []).join(" · "))}</td>
         <td class="trunc" title="${esc((s.systems || []).join(" / "))}">${esc((s.systems || []).join(" / "))}</td>
+        ${hasModule ? `<td>${s.module ? `<span class="syschip">${esc(s.module)}</span>` : "—"}</td>` : ""}
         <td class="trunc" title="${esc(s.judge || "")}">${esc(s.judge || "—")}</td>
         <td>${tag(s.ai === "只能人做" ? "人做" : s.ai)}</td>
       </tr>`).join("");
@@ -228,11 +252,12 @@
       <div class="goal">${esc(seg.goal)} · ${seg.steps.length} 个微环节</div>
       ${strip(seg.steps)}
       <table>
-        <colgroup>
-          <col style="width:46px"><col style="width:21%"><col style="width:11%"><col style="width:16%">
-          <col style="width:13%"><col style="width:10%"><col style="width:20%"><col style="width:70px">
-        </colgroup>
-        <thead><tr><th>编号</th><th>微环节</th><th>谁来做</th><th>输入</th><th>产出</th><th>系统</th><th>判定 / 卡点</th><th>AI</th></tr></thead>
+        ${hasModule
+          ? `<colgroup><col style="width:46px"><col style="width:20%"><col style="width:10%"><col style="width:14%">
+             <col style="width:12%"><col style="width:10%"><col style="width:11%"><col style="width:17%"><col style="width:66px"></colgroup>`
+          : `<colgroup><col style="width:46px"><col style="width:21%"><col style="width:11%"><col style="width:16%">
+             <col style="width:13%"><col style="width:10%"><col style="width:20%"><col style="width:70px"></colgroup>`}
+        <thead><tr><th>编号</th><th>微环节</th><th>谁来做</th><th>输入</th><th>产出</th><th>系统</th>${hasModule ? "<th>金蝶模块</th>" : ""}<th>判定 / 卡点</th><th>AI</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       ${insights(seg)}
@@ -252,6 +277,7 @@
       ${blk("处理动作", esc((s.actions || []).join("；")))}
       ${blk("产出记录", esc((s.outputs || []).join("、")))}
       ${blk("承载系统", chips(s.systems))}
+      ${blk("金蝶模块", s.module ? `<span class="syschip">${esc(s.module)}</span>` : "")}
       ${blk("判定 / 卡点", esc(s.judge || ""))}
       ${blk("AI 化", (s.ai ? tag(s.ai) + " " : "") + esc(s.aiNote || ""))}
       <button class="more" data-detail="${s.id}">查看完整详情 →</button>`;
@@ -319,6 +345,7 @@
           ${cell("输入", esc((st.inputs || []).join("、")))}
           ${cell("产出记录", esc((st.outputs || []).join("、")))}
           ${cell("承载系统", esc((st.systems || []).join(" / ")))}
+          ${cell("金蝶模块", st.module ? `<span class="syschip">${esc(st.module)}</span>` : "")}
           ${cell("处理动作", esc((st.actions || []).join("；")))}
           ${cell("指标", esc((st.kpis || []).join(" · ")))}
           ${cell("常见风险", esc((st.risks || []).join("；")))}

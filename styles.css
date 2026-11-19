@@ -157,3 +157,20 @@ body.only-main .tn.l3{display:none}
 .splitter:hover::after{background:#93c5fd;width:2px;left:2px}
 body.dragging{cursor:col-resize;user-select:none}
 body.dragging *{cursor:col-resize !important}
+
+/* 金蝶模块标记 */
+.syschip{font-size:10.5px;color:#4338ca;background:#f5f7ff;border:1px solid #e0e7ff;border-radius:var(--r-sm);padding:2px 7px;white-space:nowrap;display:inline-block}
+.rp.cross{border-style:dashed;border-color:#c7d2fe;color:#4338ca;background:#f5f7ff}
+.rp.cross.on{background:#4338ca;border-color:#4338ca;color:#fff;border-style:solid}
+
+/* 矩阵 */
+.matrix{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
+.matrix th{font-size:10.5px;color:var(--muted);text-align:center;padding:7px 4px;border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.matrix th:first-child{text-align:left;width:120px}
+.matrix td{text-align:center;height:32px;border-bottom:1px solid var(--line2)}
+.matrix td:first-child{text-align:left;color:var(--ink2);font-weight:500}
+.matrix .full{color:#2563eb;font-weight:700}
+.matrix .part{color:#93c5fd}
+.matrix .none{color:#e2e8f0}
+.legend{display:flex;gap:16px;font-size:11px;color:var(--muted);margin-top:8px}
+.legend b{font-size:12px}

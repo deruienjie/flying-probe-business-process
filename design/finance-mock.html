@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>新增第 9 阶段「财务与成本」原型</title>
+<style>
+  :root{
+    --t-xs:12px; --t-sm:13px; --t-md:14px; --t-lg:16px; --t-xl:20px; --t-2xl:26px;
+    --ink:#0f172a; --ink2:#334155; --muted:#64748b; --faint:#94a3b8;
+    --line:#e2e8f0; --line2:#eef2f8; --bg:#f5f7fb; --accent:#2563eb;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1760px;background:#eceff5;padding:26px 30px 34px;
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .bt{font-size:var(--t-2xl);font-weight:700}
+  .bs{font-size:var(--t-sm);color:var(--muted);margin:6px 0 18px}
+  .bs b{color:var(--ink2)}
+
+  .frame{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px;box-shadow:0 4px 16px rgba(15,23,42,.06)}
+  .fh{display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--line2);background:#fbfcff}
+  .fh .no{width:24px;height:24px;border-radius:var(--r-sm);background:var(--accent);color:#fff;font-size:var(--t-xs);font-weight:700;display:grid;place-items:center}
+  .fh b{font-size:var(--t-md)}
+  .fh i{font-style:normal;font-size:var(--t-xs);color:var(--faint);margin-left:auto}
+  .cap{font-size:var(--t-xs);color:var(--muted);padding:10px 20px 13px;border-top:1px dashed var(--line2)}
+
+  /* 应用外壳 */
+  .app{display:flex;flex-direction:column;height:452px}
+  .top{height:50px;display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid var(--line2);flex:none}
+  .logo{width:26px;height:26px;border-radius:var(--r-sm);background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
+  .top .nm{font-size:var(--t-md);font-weight:600}
+  .top .cnt{font-size:var(--t-xs);color:var(--faint)}
+  .density{margin-left:auto;display:flex;background:#f1f5f9;border-radius:var(--r-sm);padding:2px}
+  .density span{font-size:var(--t-xs);padding:5px 12px;border-radius:4px;color:var(--muted)}
+  .density span.on{background:#fff;color:var(--accent);font-weight:600;box-shadow:0 1px 2px rgba(15,23,42,.08)}
+
+  .ribbon{display:flex;align-items:center;gap:4px;padding:8px 18px;border-bottom:1px solid var(--line2);flex:none;overflow:hidden}
+  .rp{font-size:var(--t-xs);padding:6px 10px;border-radius:var(--r-sm);border:1px solid var(--line);background:#fff;color:var(--muted);white-space:nowrap}
+  .rp.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .rp.new{border-style:dashed;border-color:#c7d2fe;color:#4338ca;background:#f5f7ff;font-weight:600}
+  .rp.new.on{background:#4338ca;border-color:#4338ca;color:#fff;border-style:solid}
+  .ra{color:#cbd5e1;font-size:10px}
+
+  .body{display:flex;flex:1;min-height:0}
+  .tree{width:192px;flex:none;border-right:1px solid var(--line2);padding:9px 0;overflow:hidden}
+  .tree .h{font-size:11px;color:var(--faint);letter-spacing:1px;padding:2px 14px 8px}
+  .tn{display:flex;align-items:center;gap:7px;min-height:28px;padding:5px 14px;font-size:var(--t-xs);color:var(--ink2)}
+  .tn.on{background:#eef4ff;color:var(--accent);font-weight:600;box-shadow:inset 2px 0 0 var(--accent)}
+  .tn.l2{padding-left:30px;color:var(--muted);font-size:11.5px}
+  .tn.l2.on{color:var(--accent);background:#f5f9ff}
+  .tn .d{width:6px;height:6px;border-radius:50%;flex:none}
+  .tn .n{margin-left:auto;font-size:10px;color:#cbd5e1}
+
+  .work{flex:1;min-width:0;display:flex}
+  .content{flex:1;padding:14px 18px;min-width:0}
+  .crumb{font-size:11px;color:var(--faint);margin-bottom:5px}
+  .crumb b{color:var(--ink2);font-weight:500}
+  .crumb i{font-style:normal;color:#cbd5e1;margin:0 4px}
+  h2{font-size:var(--t-xl);font-weight:700;display:flex;align-items:center;gap:8px}
+  h2 .ab{width:26px;height:26px;border-radius:var(--r-sm);background:#4338ca;color:#fff;font-size:var(--t-sm);display:grid;place-items:center}
+  .badge{font-size:10.5px;padding:2px 8px;border-radius:10px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;font-weight:500}
+  .goal{font-size:var(--t-sm);color:var(--muted);margin:4px 0 9px}
+  .strip{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .strip span{font-size:11px;border:1px solid var(--line);border-radius:var(--r-sm);padding:3px 9px;color:var(--muted);background:#fff}
+  .strip b{color:var(--ink2)}
+
+  table{width:100%;border-collapse:collapse;font-size:var(--t-xs);table-layout:fixed}
+  th{text-align:left;font-weight:500;color:var(--faint);font-size:11px;padding:7px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:0 7px;border-bottom:1px solid var(--line2);color:var(--ink2);height:34px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  tr.on td{background:#f5f9ff}
+  td.id{color:var(--faint)}
+  td.nm{font-weight:600;color:var(--ink)}
+  .tag{font-size:10.5px;padding:2px 7px;border-radius:var(--r-sm);border:1px solid;white-space:nowrap}
+  .auto{color:#047857;background:#ecfdf5;border-color:#d1fae5}
+  .help{color:#b45309;background:#fffbeb;border-color:#fef3c7}
+  .sys{font-size:11px;color:#4338ca;background:#f5f7ff;border:1px solid #e0e7ff;border-radius:var(--r-sm);padding:2px 7px;white-space:nowrap}
+
+  .drawer{width:268px;flex:none;border-left:1px solid var(--line2);background:#fbfdff;padding:14px}
+  .drawer h3{font-size:var(--t-lg);font-weight:700}
+  .drawer .dg{font-size:11px;color:var(--muted);margin:2px 0 10px}
+  .dr{margin-bottom:8px}
+  .dr .k{font-size:10px;color:var(--faint);letter-spacing:.3px}
+  .dr .v{font-size:11.5px;color:var(--ink2)}
+
+  /* 矩阵 */
+  .matrix{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
+  .matrix th{font-size:11px;color:var(--muted);text-align:center;padding:8px 4px;border-bottom:1px solid var(--line);font-weight:500}
+  .matrix th:first-child{text-align:left;width:150px}
+  .matrix td{text-align:center;height:34px;border-bottom:1px solid var(--line2);font-size:12px}
+  .matrix td:first-child{text-align:left;color:var(--ink2);font-weight:500}
+  .full{color:#2563eb;font-weight:700}
+  .part{color:#93c5fd}
+  .none{color:#e2e8f0}
+  .legend{display:flex;gap:18px;font-size:11px;color:var(--muted);margin-top:10px}
+  .legend b{font-size:13px}
+  .note{font-size:11.5px;color:var(--muted);margin-top:10px;background:#f8fafc;border:1px solid var(--line2);border-radius:var(--r-sm);padding:9px 11px}
+</style>
+</head>
+<body>
+
+<div class="bt">新增第 9 阶段「财务与成本」· 加入现有网页的方案</div>
+<div class="bs">保留原有 8 阶段不变，财务作为 <b>横贯阶段</b> 追加在最后；新增「金蝶模块」维度，用一个矩阵把"业务环节 ↔ 系统模块"对上</div>
+
+<!-- ① 段视图 -->
+<div class="frame">
+  <div class="fh"><div class="no">1</div><b>第 9 阶段 → 段视图：表格多一列「金蝶模块」</b>
+    <i>和现有段视图完全同构，只是加了模块列</i></div>
+  <div class="app">
+    <div class="top">
+      <div class="logo">FP</div>
+      <div><div class="nm">飞针设备制造 · 业务流程分析</div><div class="cnt">9 阶段 · 13 业务段 · 69 微环节</div></div>
+      <div class="density"><span class="on">标准</span><span>只看主线</span></div>
+    </div>
+    <div class="ribbon">
+      <span class="rp">市场与销售</span><span class="ra">→</span>
+      <span class="rp">订单评审</span><span class="ra">→</span>
+      <span class="rp">设计与 BOM</span><span class="ra">→</span>
+      <span class="rp">计划与采购</span><span class="ra">→</span>
+      <span class="rp">装配与调试</span><span class="ra">→</span>
+      <span class="rp">测试与验收</span><span class="ra">→</span>
+      <span class="rp">现场交付</span><span class="ra">→</span>
+      <span class="rp">回款与售后</span><span class="ra">→</span>
+      <span class="rp new on">⑨ 财务与成本</span>
+    </div>
+    <div class="body">
+      <div class="tree">
+        <div class="h">业务主线</div>
+        <div class="tn"><span class="d" style="background:#2563eb"></span>市场与销售<span class="n">6 段</span></div>
+        <div class="tn"><span class="d" style="background:#0891b2"></span>订单评审与立项</div>
+        <div class="tn"><span class="d" style="background:#0f766e"></span>设计与 BOM</div>
+        <div class="tn"><span class="d" style="background:#d97706"></span>计划与采购</div>
+        <div class="tn"><span class="d" style="background:#db2777"></span>装配与调试</div>
+        <div class="tn"><span class="d" style="background:#0d9488"></span>测试与验收</div>
+        <div class="tn"><span class="d" style="background:#4d7c0f"></span>现场交付</div>
+        <div class="tn"><span class="d" style="background:#b45309"></span>回款与售后</div>
+        <div class="tn on"><span class="d" style="background:#4338ca"></span>财务与成本<span class="n">7 段</span></div>
+        <div class="tn l2 on">G 应收与开票<span class="n">6</span></div>
+        <div class="tn l2">H 应付与结算<span class="n">5</span></div>
+        <div class="tn l2">I 存货核算<span class="n">5</span></div>
+        <div class="tn l2">J 成本核算<span class="n">7</span></div>
+        <div class="tn l2">K 总账与报表<span class="n">5</span></div>
+        <div class="tn l2">L 税务与发票<span class="n">4</span></div>
+        <div class="tn l2">M 资金与预算<span class="n">4</span></div>
+      </div>
+      <div class="work">
+        <div class="content">
+          <div class="crumb">飞针设备制造<i>›</i>财务与成本<i>›</i><b>G 应收与开票</b></div>
+          <h2><span class="ab">G</span>应收与开票 <span class="badge">横贯阶段</span></h2>
+          <div class="goal">一台设备从预收到质保金，钱分几笔、按什么节点收 · 6 个微环节</div>
+          <div class="strip"><span><b>6</b> 个环节</span><span><b>2</b> 个角色</span><span><b>2</b> 个金蝶模块</span><span>可自动 <b>3</b></span><span>可辅助 <b>2</b></span></div>
+          <table>
+            <colgroup><col style="width:46px"><col style="width:24%"><col style="width:13%"><col style="width:17%"><col style="width:21%"><col style="width:12%"></colgroup>
+            <tr><th>编号</th><th>微环节</th><th>谁来做</th><th>产出</th><th>金蝶模块</th><th>AI</th></tr>
+            <tr class="on"><td class="id">G1</td><td class="nm">预收款登记</td><td>财务 · 商务</td><td>收款单</td><td><span class="sys">应收款管理</span></td><td><span class="tag auto">可自动</span></td></tr>
+            <tr><td class="id">G2</td><td class="nm">发货确认与开票申请</td><td>财务</td><td>开票申请单</td><td><span class="sys">应收款 · 发票云</span></td><td><span class="tag auto">可自动</span></td></tr>
+            <tr><td class="id">G3</td><td class="nm">销项发票开具</td><td>财务</td><td>增值税发票</td><td><span class="sys">发票云</span></td><td><span class="tag help">可辅助</span></td></tr>
+            <tr><td class="id">G4</td><td class="nm">应收单生成（按验收节点）</td><td>财务</td><td>应收单</td><td><span class="sys">应收款管理</span></td><td><span class="tag auto">可自动</span></td></tr>
+            <tr><td class="id">G5</td><td class="nm">收款核销</td><td>财务</td><td>核销单</td><td><span class="sys">应收款管理</span></td><td><span class="tag help">可辅助</span></td></tr>
+            <tr><td class="id">G6</td><td class="nm">账龄分析与逾期催收</td><td>财务 · 销售</td><td>账龄分析表</td><td><span class="sys">应收款管理</span></td><td><span class="tag auto">可自动</span></td></tr>
+          </table>
+        </div>
+        <div class="drawer">
+          <h3>G1 预收款登记</h3>
+          <div class="dg">合同生效后第一笔钱，也是最容易漏的一笔</div>
+          <div class="dr"><div class="k">谁来做</div><div class="v">财务 · 商务</div></div>
+          <div class="dr"><div class="k">输入</div><div class="v">合同付款条款、银行回单</div></div>
+          <div class="dr"><div class="k">产出</div><div class="v">收款单（预收）</div></div>
+          <div class="dr"><div class="k">金蝶模块</div><div class="v">应收款管理 → 收款单</div></div>
+          <div class="dr"><div class="k">判定 / 卡点</div><div class="v">预收比例 ≥ 30%，未到账不投产</div></div>
+          <div class="dr"><div class="k">AI 化</div><div class="v"><span class="tag auto">可自动</span> 识别回单、自动匹配合同号</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cap">现有的段视图、表格、抽屉全部复用；只多了「金蝶模块」这一列，以及顶部 Ribbon 的第 9 个阶段（虚线表示"横贯阶段"，不是时间上的最后一步）。</div>
+</div>
+
+<!-- ② 模块矩阵 -->
+<div class="frame">
+  <div class="fh"><div class="no">2</div><b>财务阶段专属：模块 × 环节矩阵</b>
+    <i>一眼看出每个环节落在哪个模块、哪个模块被谁喂数据</i></div>
+  <div style="padding:16px 20px">
+    <table class="matrix">
+      <tr>
+        <th>金蝶云星空模块</th>
+        <th>G 应收与开票</th><th>H 应付与结算</th><th>I 存货核算</th><th>J 成本核算</th>
+        <th>K 总账与报表</th><th>L 税务与发票</th><th>M 资金与预算</th>
+      </tr>
+      <tr><td>应收款管理</td><td class="full">●</td><td class="none">–</td><td class="none">–</td><td class="none">–</td><td class="part">○</td><td class="none">–</td><td class="part">○</td></tr>
+      <tr><td>发票云</td><td class="full">●</td><td class="part">○</td><td class="none">–</td><td class="none">–</td><td class="part">○</td><td class="full">●</td><td class="none">–</td></tr>
+      <tr><td>应付款管理</td><td class="none">–</td><td class="full">●</td><td class="part">○</td><td class="part">○</td><td class="part">○</td><td class="part">○</td><td class="part">○</td></tr>
+      <tr><td>存货核算</td><td class="none">–</td><td class="part">○</td><td class="full">●</td><td class="part">○</td><td class="part">○</td><td class="none">–</td><td class="none">–</td></tr>
+      <tr><td>实际成本</td><td class="none">–</td><td class="none">–</td><td class="part">○</td><td class="full">●</td><td class="part">○</td><td class="none">–</td><td class="none">–</td></tr>
+      <tr><td>总账</td><td class="part">○</td><td class="part">○</td><td class="part">○</td><td class="part">○</td><td class="full">●</td><td class="part">○</td><td class="part">○</td></tr>
+      <tr><td>报表系统</td><td class="none">–</td><td class="none">–</td><td class="none">–</td><td class="part">○</td><td class="full">●</td><td class="none">–</td><td class="none">–</td></tr>
+      <tr><td>资金管理</td><td class="part">○</td><td class="part">○</td><td class="none">–</td><td class="none">–</td><td class="none">–</td><td class="none">–</td><td class="full">●</td></tr>
+    </table>
+    <div class="legend">
+      <span><b style="color:#2563eb">●</b> 该模块在这一段产生单据（主责）</span>
+      <span><b style="color:#93c5fd">○</b> 只读取 / 被引用</span>
+      <span><b style="color:#cbd5e1">–</b> 不涉及</span>
+    </div>
+    <div class="note">
+      读法：竖着看一段能看到"这一段要动哪几个模块"；横着看一个模块能看到"它的数据是从哪几段喂进来的"。
+      比如「实际成本」只被 I 存货核算喂数、只向 K 总账输出——这就是为什么<b>存货核算没做对，成本一定算不准</b>。
+    </div>
+  </div>
+  <div class="cap">这个矩阵是财务阶段独有的视图，放在该阶段首页；其它阶段仍用原来的段卡片。</div>
+</div>
+
+<div style="font-size:11.5px;color:#64748b">
+  <b>改动清单：</b>① Ribbon 加第 9 阶段（虚线=横贯） ② 左树加 7 个段 ③ 表格加「金蝶模块」列 ④ 财务阶段首页换成矩阵视图 ⑤ 详情页加「这一段最容易错的地方」
+</div>
+
+</body>
+</html>
