@@ -174,3 +174,80 @@ body.dragging *{cursor:col-resize !important}
 .matrix .none{color:#e2e8f0}
 .legend{display:flex;gap:16px;font-size:11px;color:var(--muted);margin-top:8px}
 .legend b{font-size:12px}
+
+/* ================= 移动端 / 平板 ================= */
+.menu-btn{display:none;width:34px;height:34px;border-radius:var(--r-sm);color:var(--ink2);font-size:16px;line-height:1;align-items:center;justify-content:center}
+.scrim{position:fixed;inset:0;background:rgba(15,23,42,.38);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+.scrim.open{opacity:1;pointer-events:auto}
+
+/* 平板：收窄左右栏 */
+@media (max-width: 1180px){
+  .side{width:200px}
+  .drawer,.aside{width:250px}
+}
+
+/* 手机 */
+@media (max-width: 820px){
+  html,body{overflow-x:hidden}
+  .menu-btn{display:flex;flex:none}
+  .top{padding:0 12px;gap:8px}
+  .top h1{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100vw - 150px)}
+  .top > div:nth-child(3){min-width:0}
+  .density{display:none}
+  .top .cnt{font-size:11px}
+  .ribbon{padding:8px 12px;gap:3px}
+  .rp{font-size:11.5px;padding:5px 9px}
+
+  /* 左树变成侧滑抽屉 */
+  .side{position:fixed;top:0;bottom:0;left:0;width:272px;max-width:84vw;z-index:70;
+        transform:translateX(-102%);transition:transform .25s ease;box-shadow:12px 0 30px rgba(15,23,42,.18)}
+  .side.open{transform:none}
+  .splitter{display:none}
+
+  .body{display:block}
+  .main{display:block;width:100%}
+  .content{padding:12px 14px 90px}
+
+  /* 表格 -> 卡片 */
+  table{display:block;min-width:0}
+  thead{display:none}
+  tbody{display:block}
+  tbody tr{display:block;border:1px solid var(--line);border-radius:var(--r-md);
+           margin:0 0 10px;padding:11px 13px;background:#fff}
+  tbody tr.on{border-color:#bfdbfe;background:#f5f9ff}
+  td{display:flex;gap:10px;border:0;height:auto;padding:3px 0;white-space:normal;overflow:visible}
+  td::before{content:attr(data-label);flex:0 0 62px;color:var(--faint);font-size:11px;line-height:1.55}
+  td.id{display:none}
+  td.nm{display:block;font-size:14.5px;font-weight:700;padding:0 0 6px}
+  td.nm::before{content:none}
+  td.trunc{max-width:none}
+
+  /* 抽屉 -> 底部弹层 */
+  .drawer{display:block;position:fixed;left:0;right:0;bottom:0;width:auto;max-height:82vh;overflow-y:auto;
+          border-left:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+          transform:translateY(102%);transition:transform .25s ease;z-index:60;
+          box-shadow:0 -10px 30px rgba(15,23,42,.18);padding:16px 16px 28px}
+  .drawer.open{transform:none}
+  .drawer::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:#e2e8f0;margin:-4px auto 12px}
+  .aside{display:none}
+
+  /* 详情页排版 */
+  .attr{grid-template-columns:1fr 1fr;gap:12px 14px;padding:14px}
+  .trio,.duo,.insights{grid-template-columns:1fr !important}
+  .cards{grid-template-columns:1fr}
+  .chain{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+  .cn{white-space:nowrap}
+  h2.title{font-size:17px}
+  .goal{font-size:12.5px}
+  .strip span{font-size:11px}
+  .matrix{font-size:11px}
+  .matrix th:first-child,.matrix td:first-child{width:92px}
+}
+
+/* 底部弹层的关闭按钮（仅移动端显示） */
+.sheet-close{display:none}
+@media (max-width: 820px){
+  .drawer{position:fixed}
+  .sheet-close{display:grid;place-items:center;position:absolute;top:12px;right:12px;
+    width:32px;height:32px;border-radius:50%;background:#f1f5f9;color:var(--muted);font-size:14px}
+}

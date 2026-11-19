@@ -29,6 +29,8 @@
   /* ---------- 状态 ---------- */
   let state = { kind: "step", id: "C2" };   // kind: phase | segment | step
   let drawerId = null;                       // 段视图里抽屉显示的微环节
+  let sheetOpen = false;                      // 移动端底部抽屉
+  const isMobile = () => window.matchMedia("(max-width: 820px)").matches;
   const expanded = new Set(["P1"]);
 
 
@@ -78,6 +80,25 @@
     } catch (_) {}
   }
 
+
+  /* ---------- 移动端交互 ---------- */
+  function syncSheet() {
+    const panel = document.querySelector(".drawer, .aside");
+    const scrim = document.getElementById("scrim");
+    if (panel) panel.classList.toggle("open", sheetOpen && !!panel.classList.contains("drawer"));
+    if (scrim) scrim.classList.toggle("open", sheetOpen);
+    document.body.classList.toggle("sheet-open", sheetOpen);
+  }
+
+  function toggleSide(open) {
+    const side = document.querySelector(".side");
+    const scrim = document.getElementById("scrim");
+    if (!side) return;
+    const next = open === undefined ? !side.classList.contains("open") : open;
+    side.classList.toggle("open", next);
+    if (scrim) scrim.classList.toggle("open", next);
+  }
+
   /* ---------- 左树 ---------- */
   function renderTree() {
     const html = MODEL.map(ph => {
@@ -114,6 +135,7 @@
         } else {
           go({ kind: btn.dataset.kind, id: btn.dataset.id });
         }
+        if (isMobile()) toggleSide(false);
       });
     });
   }
@@ -236,15 +258,15 @@
     const hasModule = seg.steps.some(s => s.module);
     const rows = seg.steps.map(s => `
       <tr class="${s.id === drawerId ? "on" : ""}" data-pick="${s.id}">
-        <td class="id">${s.id}</td>
-        <td class="nm">${esc(s.name)}</td>
-        <td class="trunc" title="${esc((s.who || []).join(" · "))}">${esc((s.who || []).join(" · "))}</td>
-        <td class="trunc" title="${esc((s.inputs || []).join(" · "))}">${esc((s.inputs || []).join(" · "))}</td>
-        <td class="trunc" title="${esc((s.outputs || []).join(" · "))}">${esc((s.outputs || []).join(" · "))}</td>
-        <td class="trunc" title="${esc((s.systems || []).join(" / "))}">${esc((s.systems || []).join(" / "))}</td>
-        ${hasModule ? `<td>${s.module ? `<span class="syschip">${esc(s.module)}</span>` : "—"}</td>` : ""}
-        <td class="trunc" title="${esc(s.judge || "")}">${esc(s.judge || "—")}</td>
-        <td>${tag(s.ai === "只能人做" ? "人做" : s.ai)}</td>
+        <td class="id" data-label="编号">${s.id}</td>
+        <td class="nm" data-label="环节">${esc(s.name)}</td>
+        <td class="trunc" data-label="谁做" title="${esc((s.who || []).join(" · "))}">${esc((s.who || []).join(" · "))}</td>
+        <td class="trunc" data-label="输入" title="${esc((s.inputs || []).join(" · "))}">${esc((s.inputs || []).join(" · "))}</td>
+        <td class="trunc" data-label="产出" title="${esc((s.outputs || []).join(" · "))}">${esc((s.outputs || []).join(" · "))}</td>
+        <td class="trunc" data-label="系统" title="${esc((s.systems || []).join(" / "))}">${esc((s.systems || []).join(" / "))}</td>
+        ${hasModule ? `<td data-label="金蝶模块">${s.module ? `<span class="syschip">${esc(s.module)}</span>` : "—"}</td>` : ""}
+        <td class="trunc" data-label="判定" title="${esc(s.judge || "")}">${esc(s.judge || "—")}</td>
+        <td data-label="AI">${tag(s.ai === "只能人做" ? "人做" : s.ai)}</td>
       </tr>`).join("");
 
     return crumb([{ label: "飞针设备制造" }, { label: ph.name, to: ph.id }, { label: `${seg.id} ${seg.name}` }]) + `
@@ -270,6 +292,7 @@
     const chips = arr => (arr && arr.length) ? `<div class="chips">${arr.map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div>` : "";
 
     return `
+      <button class="sheet-close" data-close-sheet aria-label="关闭">✕</button>
       <h3>${s.id} ${esc(s.name)}</h3>
       <div class="dg">${esc(s.judge || "")}</div>
       ${blk("谁来做", esc((s.who || []).join(" · ")))}
@@ -412,7 +435,9 @@
     $("#main").querySelectorAll("[data-pick]").forEach(tr =>
       tr.addEventListener("click", () => {
         drawerId = tr.dataset.pick;
+        sheetOpen = isMobile();
         render();
+        syncSheet();
       }));
   }
 
@@ -430,7 +455,9 @@
   function go(s) {
     if (!s) return;
     state = s;
+    sheetOpen = false;
     render();
+    syncSheet();
     $("#main").scrollTop = 0;
     const hash = s.kind === "step" ? "step:" + s.id : s.kind === "segment" ? "seg:" + s.id
       : s.kind === "focus" ? s.id : "phase:" + s.id;
@@ -453,7 +480,21 @@
 
   /* 深链 */
   restoreWidths();
+
+  const menuBtn = document.getElementById("menuBtn");
+  if (menuBtn) menuBtn.addEventListener("click", () => toggleSide());
+  const scrim = document.getElementById("scrim");
+  if (scrim) scrim.addEventListener("click", () => {
+    toggleSide(false);
+    sheetOpen = false; render(); syncSheet();
+  });
+  document.addEventListener("click", e => {
+    if (e.target.closest("[data-close-sheet]")) { sheetOpen = false; render(); syncSheet(); }
+  });
+  window.addEventListener("resize", () => syncSheet());
   const h = decodeURIComponent(location.hash.replace("#", ""));
+  const pick = new URLSearchParams(location.search).get("pick");
   const initial = h ? resolve(h) : { kind: "segment", id: "A" };
   go(initial || { kind: "segment", id: "A" });
+  if (pick && isMobile()) { drawerId = pick; sheetOpen = true; render(); syncSheet(); }
 })();
