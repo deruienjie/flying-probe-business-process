@@ -5,6 +5,8 @@
 
 **在线看：https://deruienjie.github.io/flying-probe-business-process/**
 
+> 手机和电脑同一个链接，页面自动适配（≤820px 表格变卡片、目录变侧滑）。
+
 ![段视图](screenshots/01-段视图-表格.png)
 
 ## 现在到哪了
