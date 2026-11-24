@@ -462,6 +462,16 @@
     const hash = s.kind === "step" ? "step:" + s.id : s.kind === "segment" ? "seg:" + s.id
       : s.kind === "focus" ? s.id : "phase:" + s.id;
     history.replaceState(null, "", "#" + hash);
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "page_view", {
+        page_title: document.title,
+        page_location: location.origin + location.pathname + location.hash
+      });
+      window.gtag("event", "flow_navigation", {
+        page_type: s.kind,
+        flow_item_id: s.id
+      });
+    }
     if (s.kind === "segment") {
       const seg = findSeg(s.id);
       drawerId = seg.steps[0].id;
